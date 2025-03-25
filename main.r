@@ -1,4 +1,5 @@
 generate_data <- function(N, intercept, slope, sd) {
+    # Simulate 2D linear point data with added Normal error term
     X = matrix(runif(N))
 
     error = rnorm(N, mean=0, sd=sd)
@@ -9,7 +10,8 @@ generate_data <- function(N, intercept, slope, sd) {
     return(result)
 }
 
-solve_linear_regression <- function(X, Y) {
+display_regression_model <- function(X, Y) {
+    # Interpret and print the mathematical regression model.
     num_parameters = dim(X)[2] + 1
     num_observations = dim(X)[1]
     if(length(Y) != num_observations)
@@ -38,20 +40,15 @@ solve_linear_regression <- function(X, Y) {
     # Initialise the parameter vector
     B = rep(0, num_parameters)
 
-    cost = compute_cost(X, Y, B)
-    cat("Cost: ", cost, "\n")
-
     # Derive the normal equations, represented as a matrix:
     normal_eqns = derive_normal_equations(X, Y, B)
     cat("\nNormal Equations:\n")
     print(normal_eqns)
 }
 
-compute_cost <- function(X, Y, B) {
-    sum(((X %*% matrix(B)) - Y) ^ 2)
-}
-
 derive_normal_equations <- function(X, Y) {
+    # Compute least squares loss function and differentiate to 
+    # yield the normal equations
     num_parms = dim(X)[2] 
     num_obs = dim(X)[1]
     
@@ -73,16 +70,8 @@ derive_normal_equations <- function(X, Y) {
     return(cbind(mat, prods))
 }
 
-X = rbind(
-    c(1, 3, -2),
-    c(3, 5,  6),
-    c(2, 4,  3)
-)
-Y = c(5, 7, 8)
-
-sln = c(-15, 8, 2)
-
 solve_linear_system <- function(X, Y) {
+    # Solve linear system of equations
     augmented = cbind(X, Y)
     colnames(augmented) <- NULL
     print(augmented)
@@ -119,13 +108,15 @@ solve_linear_system <- function(X, Y) {
 }
 
 draw_fit <- function(B) {
+    # Draw the fitted regression line
     fitted_line <- function(x) {
         B[1] + B[2] * x
     }
-    curve(fitted_line, from=0, to=1, add=TRUE, lwd=2, col="green")
+    curve(fitted_line, from=0, to=1, add=TRUE, lwd=2, col="blue")
 }
 
 fit_regression <- function(X, Y) {
+    # Fit linear regression to explanatory & response variables
     tmp = derive_normal_equations(X, Y)
     system_coeffs = tmp[,1:dim(X)[2]]
     system_prods = tmp[, dim(X)[2] + 1]
@@ -138,7 +129,7 @@ num_features = 1
 data = generate_data(100, 0.2, 0.6, 0.1)
 X = cbind(rep(1, dim(data)[2]), data[,1:num_features])
 Y = data[,num_features + 1]
-plot(X[,2], Y, col="blue", pch=19)
+plot(X[,2], Y, col="green", pch=19)
 
 B = fit_regression(X, Y)
 draw_fit(B)
