@@ -1,3 +1,14 @@
+generate_data <- function(N, intercept, slope, sd) {
+    X = matrix(runif(N))
+
+    error = rnorm(N, mean=0, sd=sd)
+
+    Y = intercept + slope * X + error
+
+    result = cbind(X, Y)
+    return(result)
+}
+
 solve_linear_regression <- function(X, Y) {
     num_parameters = dim(X)[2] + 1
     num_observations = dim(X)[1]
@@ -40,22 +51,26 @@ compute_cost <- function(X, Y, B) {
     sum(((X %*% matrix(B)) - Y) ^ 2)
 }
 
-derive_normal_equations <- function(X, Y, B) {
+derive_normal_equations <- function(X, Y) {
     num_parms = dim(X)[2] 
     num_obs = dim(X)[1]
-
-    mat = matrix(nrow=num_parms, ncol=num_obs)
-    for(j in 1:num_parms)
-    {
-        for(i in 1:num_obs)
-        {
-            hat_sum = 0.0
-            for(j_ in 1:num_obs) 
-                hat_sum = hat_sum + B[j_]*X[i, j_]
-            mat[j, i] = (hat_sum - Y[i]) * X[i, j]
+    
+    mat = matrix(nrow=num_parms, ncol=num_parms)
+    prods = rep(0, num_parms)
+    for(j in 1:num_parms) {
+        for(k in 1:num_parms) {
+            coeff = 0
+            for(i in 1:num_obs)
+                coeff = coeff + X[i, k] * X[i, j]
+            mat[j, k] = coeff
         }
+        prod = 0
+        for(i in 1:num_obs)
+            prod = prod + Y[i] * X[i, j]
+        prods[j] = prod
     }
-    return(mat)
+
+    return(cbind(mat, prods))
 }
 
 X = rbind(
@@ -99,5 +114,24 @@ solve_linear_system <- function(X, Y) {
 
     cat("Product: ", c(X %*% solution), "\n")
     cat("Expected product: ", Y, "\n")
+
+    return(solution)
 }
 
+draw_fit <- function(B) {
+    fitted_line <- function(x) {
+        B[1] + B[2] * x
+    }
+    curve(fitted_line, from=0, to=1, add=TRUE)
+}
+
+num_features = 1
+data = generate_data(100, 0.2, 0.6, 0.1)
+X = cbind(rep(1, dim(data)[2]), data[,1:num_features])
+Y = data[,num_features + 1]
+
+tmp = derive_normal_equations(X, Y)
+system_coeffs = tmp[,1:dim(X)[2]]
+system_prods = tmp[, dim(X)[2] + 1]
+
+B = solve_linear_system(system_coeffs, system_prods)
