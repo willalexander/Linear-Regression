@@ -57,3 +57,47 @@ derive_normal_equations <- function(X, Y, B) {
     }
     return(mat)
 }
+
+X = rbind(
+    c(1, 3, -2),
+    c(3, 5,  6),
+    c(2, 4,  3)
+)
+Y = c(5, 7, 8)
+
+sln = c(-15, 8, 2)
+
+solve_linear_system <- function(X, Y) {
+    augmented = cbind(X, Y)
+    colnames(augmented) <- NULL
+    print(augmented)
+
+    for(j in 1:(dim(X)[2] - 1)) {
+        for(i in (j + 1):dim(X)[1]) {
+            factor = augmented[i, j] / augmented[j, j]
+            augmented[i, ] = augmented[i, ] - factor * augmented[j,]
+        }
+        print(augmented)
+    }
+
+    cat("### Echelon Form ###\n")
+
+    for(j in dim(X)[1]:2) {
+        for(i in (j - 1):1) {
+            factor = augmented[i, j] / augmented[j, j]
+            augmented[i,] = augmented[i,] - factor * augmented[j,]
+        }
+        print(augmented)
+    }
+
+    cat("### Solution Form ###\n")
+    solution = rep(0, dim(X)[1])
+    for(i in 1:dim(X)[1])
+        solution[i] = augmented[i, dim(X)[1] + 1] / augmented[i, i]
+    print("Solution:")
+    print(solution)
+
+    cat("Product: ", c(X %*% solution), "\n")
+    cat("Expected product: ", Y, "\n")
+}
+
