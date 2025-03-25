@@ -122,16 +122,23 @@ draw_fit <- function(B) {
     fitted_line <- function(x) {
         B[1] + B[2] * x
     }
-    curve(fitted_line, from=0, to=1, add=TRUE)
+    curve(fitted_line, from=0, to=1, add=TRUE, lwd=2, col="green")
+}
+
+fit_regression <- function(X, Y) {
+    tmp = derive_normal_equations(X, Y)
+    system_coeffs = tmp[,1:dim(X)[2]]
+    system_prods = tmp[, dim(X)[2] + 1]
+
+    B = solve_linear_system(system_coeffs, system_prods)
+    return(B)
 }
 
 num_features = 1
 data = generate_data(100, 0.2, 0.6, 0.1)
 X = cbind(rep(1, dim(data)[2]), data[,1:num_features])
 Y = data[,num_features + 1]
+plot(X[,2], Y, col="blue", pch=19)
 
-tmp = derive_normal_equations(X, Y)
-system_coeffs = tmp[,1:dim(X)[2]]
-system_prods = tmp[, dim(X)[2] + 1]
-
-B = solve_linear_system(system_coeffs, system_prods)
+B = fit_regression(X, Y)
+draw_fit(B)
